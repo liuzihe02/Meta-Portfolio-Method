@@ -18,18 +18,24 @@ with open('data.pkl','rb') as f:  #rb is read binary code
     
 '''
 IMPT NOTES:
-    index_ find the integer index of the start of every month and defines when REBALANCING occurs
-    cov_period defines the length of time backwards for the covariance matrix calcultion
-    perf_period defines the length of time that ret_f(returns forward) calcs for sharpe ratio and ret_b
-        (returns backwards) calculates for performance features and stats of assets universe
+    returns: a dataframe containing daily returns for each asset
+    
+    index_: defines when REBALANCING occurs, contains the INTEGER INDEX of the start of EVERY MONTH
+    index_int: defines when weights and datapoints exists, contains the INTEGER INDEX of EVERY DAY
+    
+    cov_period: defines the length of time backwards for the covariance matrix calcultion
+    perf_period: defines the length of time that ret_b (returns backwards) calculates for performance features,
+                and stats of assets universe
+    sharpe_period: defines the length of time that ret_f(returns forwards) calcs for sharpe ratio
 '''
+
 #%%
 '''PART 1: BUILD MONTHLY WEIGHTS, COV MATRIX FOR NRP AND HRP
-For every month after the first year, build weights based on past year w/riskfolio
-For each strategy, each month/weight, there is an associated cov matrix
+For every day after the first year, build weights based on past year w/riskfolio
+For each strategy and each day there is an associated corr matrix
 
 note that weights_nr and weights_hr are dataframes while corr and coph and dictionaries.
-All are indexed by integers of the returns' indexes'
+All are indexed by index_ (not index)
 
 '''
 
@@ -72,13 +78,13 @@ for i in range(cov_period+1,len(returns.index)):
     weights_nr.loc[i]=w_nr.T.squeeze()
     weights_hr.loc[i]=w_hr.T.squeeze()
     
-    #append corr matrix, both cov and corr are df
+    #add corr matrix, both cov and corr are df
     #NOTE, if method for calc covariance is same for HRP and NRP, they will have the same COV matrix!!!
     #doesnt matter if u choose port_nr.cov or port_hr.cov
     corr[i]=rp.AuxFunctions.cov2corr(port_nr.cov)
     
     #add the cophenetic corr coeff, ONLY applies for HRP to measure quality of clustering, coph_corr is numpy
-    #note that if the asset universe is too small, coph might give NaN
+    #note that if the number of assets is too small, coph might give NaN
     coph[i]=coph_corr(port_hr)
 
 models['NRP'] = weights_nr.copy()
@@ -92,14 +98,26 @@ with open('models.pkl','wb') as f:
     
 #%%
 '''PART 2: CREATING X AND Y DATASET FOR XGB
-
-PART 2A: OBTAINING DAILY PERFORMANCE (FEATURES) AND SHARPE RATIOS(LABELS)
+        if index is at 1026, perf_period=2, sharpe_period=2
+        ret_b computes data from 1024 to day 1025
+        ret_f computes data from 1026 to 1027
 
     X DATA (FEATURES):
-        if index is at 1026, data computes data from day 1006(day of prev month) to day 1025
+        features like semi_nrp with 'nrp' or 'hrp' attached at the back, measure ret_b for that strategy
+        asset universe stats measure ret_b for each asset individually, and combines these stats
+        while mean/std_corr, cond, coph, det measure data regarding that date's corr matrix
         
-        MONTHLY SEMI STD:
+        SEMI_STD_NRP/HRP:
             measures the std of deviations below mean only
+        
+        AVE_RETURN_NRP/HRP:
+            get mean return of that portfolio's daily returns
+        
+        REALISED_VOLATILITY_NRP/HRP:
+            alternative measure of variance
+            
+        MAXIMUM DRAWDOWN:
+            longest consecutive decrease in that timeframe
        
         MONTHLY ASSET UNIVERSE STATS:
             mean_assets_mean: get mean return in each asset. Take average across assets
@@ -109,16 +127,20 @@ PART 2A: OBTAINING DAILY PERFORMANCE (FEATURES) AND SHARPE RATIOS(LABELS)
             mdd_assets_mean: get mdd in each asset. Take ave across assets
             mdd_assets_SD: get mdd in each asset. Take std across assets
         
-        MONTHLY HRP AND NRP AVE RETURN
-            for that month, get mean return of that portfolio's daily returns
-            
-       COV MEAN AND STD:
-           for that month's constructed weights, take the mean and std of upper triangular elems. Measures
+        MEAN_CORR, STD_CORR:
+           take the mean and std of upper triangular elems. Measures
            average correlation btwn assets and how varied these corr are
         
+        CONDITION NUMBER, DETERMINANT:
+            some qualities about the correlation matrix
+        
+        COPHENETIC CORRELATION COPEFFICIENT:
+            measures quality of clustering
+    
     Y DATA (LABELS): 
         MONTHLY SHARPE RATIOS(HRP-NRP):
-            sharpe at index 1026 gives sharpe from day1026 to day 1045(day right b4 day of next month)
+            sharpe at index 1026 gives sharpe from day1026 to day 1027 if sharpe_period=2
+            
 '''
 
 #load back the weights so I dont have to run this file again
@@ -140,23 +162,25 @@ data_col=['sharpe_NRP','sharpe_HRP',
           'det']
 data=pd.DataFrame(index=index_int,columns=data_col,dtype='float64')
 
-'''Generate portfolio returns(weighted indiv asset returns) for NRP and HRP separately'''
+'''Generate portfolio returns(series) for NRP and HRP separately'''
 nr_ret=port_ret(models['NRP'],returns,index_) #models[nrp] stores the weights
 hr_ret=port_ret(models['HRP'],returns,index_)
 
-#performance period defines the number of days that ret_f and ret_b considers
 perf_period=21
-for i in range(index_[0]+perf_period, len(index_int)-perf_period+1): 
+sharpe_period=21
+for i in range(index_[0]+perf_period, len(index_int)-sharpe_period+1): 
     print(i)
-    #because model needs to calc perf_period backwards and forwards worth of data
+    '''
+    Weird indexing to make it such that it doesnt run into NaN values, yet fill data as much as possible
+    because model needs to calc perf_period backwards and sharpe_period forwards worth of data
     
-    #first day of data is the first elem of index_ + perf_period number of days
-    #last day of data is the last elem of index_ - perf_period number of days (final i that range iterates over)
-        #u add +1 to range because iloc functions abit differently from range!
+    first day of data is the first elem of index_ + perf_period number of days
+    last day of data is the last elem of index_ - sharpe_period number of days (final i that range iterates over)
+    u add +1 to range because iloc functions abit differently from range!'''
     
     '''calc NRP first'''
     #ret_f is returns (perf_period) days forwards, INCLUDING current date
-    ret_f=nr_ret.iloc[i:i+perf_period]
+    ret_f=nr_ret.iloc[i:i+sharpe_period]
     data.at[ i, 'sharpe_NRP']=sharpe_daily(ret_f)
     
     #ret_b is returns (perf_period) days backwards, EXCLUDING current date
@@ -165,7 +189,7 @@ for i in range(index_[0]+perf_period, len(index_int)-perf_period+1):
                     semi_std(ret_b) ,ret_b.dropna().mean(), rea_vol(ret_b), mdd(ret_b)
     
     '''calc HRP now'''
-    ret_f=hr_ret.iloc[i:i+perf_period]
+    ret_f=hr_ret.iloc[i:i+sharpe_period]
     data.at[ i, 'sharpe_HRP']=sharpe_daily(ret_f)
     
     ret_b=hr_ret.iloc[i-perf_period:i]  
@@ -193,12 +217,11 @@ X= data.drop(['sharpe_HRP','sharpe_NRP'], axis=1) #del these 2 columns, note dro
 #FIXME
 '''PART 3: TRAINING XGBOOST: CREATE MPM CHOICES
 
-trng period is the length of trng for xgboost in n.o. of months
-It also affects the starting month at which weights can be given for MPM, therefore NRP and HRP as well
-note that xgb only takes in dataframes
+trng period is the number of data points that XGB considers. 
+It also is the number of days that XGB looks back, since each day has one data point
 
 note that the indexes for feat_impt and weights_mpm are index_, which are only selected rebalancing dates
-
+WE IGNORE BAYESINA HYPERPARAM OPT FOR NOW
 '''
 #prep the feature importances
 feat_impt=pd.DataFrame([],columns=X.columns,index=index_,dtype='float64')
@@ -210,13 +233,13 @@ weights_mpm=pd.DataFrame([],columns=assets,index=index_)
 # create model instance
 impt_type='gain'
 reg = xgb.XGBRegressor(objective='reg:squarederror',importance_type=impt_type)
-params = { 'max_depth': [3, 6, 9],
-       'learning_rate': [0.01, 0.1, 0.3],
-       'subsample': [0.5,0.8,1.0],
-       'n_estimators': [50,100, 200],
-       'min_child_weight':[0,1,3],
-       'colsample_bytree':[0.5,0.8,1]}
 
+# params = { 'max_depth': [3, 6, 9],
+#        'learning_rate': [0.01, 0.1, 0.3],
+#        'subsample': [0.5,0.8,1.0],
+#        'n_estimators': [50,100, 200],
+#        'min_child_weight':[0,1,3],
+#        'colsample_bytree':[0.5,0.8,1]}
 # #note that here reg is assigned to a BayesSearchCV obj rather than an XGB obj
 # reg = BayesSearchCV(
 #     estimator=reg,
@@ -224,15 +247,13 @@ params = { 'max_depth': [3, 6, 9],
 #     n_iter=10,
 #     verbose=1)
 
-param_list=[]
-
 trng_prd=1008 #2years
-#find location of first int in index_ that cross the threshold
+#find location of first int in index_ that cross the threshold, this is start
 for i in range(len(index_)):
     if index_[i]>index_[0]+perf_period+trng_prd:
         start=i
         break
-#indexes of ret where mpm_nr has data
+#indexes of ret where weights_mpm will have data
 trng_index=index_[start:]
     
 for i in trng_index: #these are integer indexes of the weights, NOT returns
@@ -248,8 +269,6 @@ for i in trng_index: #these are integer indexes of the weights, NOT returns
         
     # #best_estimator is an attribute of BayesCV, NOT XGB
     # feat_impt.iloc[i]=reg.best_estimator_.feature_importances_
-    # #see best params
-    # param_list.append(reg.best_estimator_.get_params())
     
     feat_impt.loc[i]=reg.feature_importances_
 
@@ -258,15 +277,37 @@ for i in trng_index: #these are integer indexes of the weights, NOT returns
 
 Measures of performance: 
 1. Cumulative Return
-2.Annualised sharpe constructed from daily sharpe*(252)^0.5
-3.Annualised sharpe from E(annual ret)/std(annual ret), this method more volatile
+2. Compound Annual Growth Rate
+3. Annualised sharpe constructed from daily returns
+4. Annualised sharpe from monthly returns
+5. Annualised sharpe from yearly returns
+
+Important Variables:
+    Comp: a dataframe containing performance metrics across strategies
+    perf: a float, the performance gain measured by Sharpe_MPM compared to Average(Sharpe_NRP and Sharpe_HRP)
+    
+    pr_df: the dataframe containing daily returns for each strategy
+    feat_impt: the dataframe containing feature importances
+    uni_corr: first elem contains corr matrix, second elem the mean of corrs and third elem the std of corrs
+
 '''
+#each is a list containing data for each strat
 cagr_list,ret_list,sharpe_list_d,sharpe_list_m,sharpe_list_y=[],[],[],[],[]
 
-for w in [weights_nr,weights_hr,weights_mpm]:
+#portfolio prices
+pr_df=pd.DataFrame([],columns=['NRP','HRP','MPM'])
+
+#list of weights
+w_list= [weights_nr,weights_hr,weights_mpm]
+
+#get performance metrics
+for i in [0,1,2]:
+    w=w_list[i]
     pr=port_ret(w,returns,trng_index).dropna()
+    #add portfolio returns
+    pr_df.iloc[:,i]=pr
     #calc cumulative returns
-    ret_list.append(port_cum_ret(pr))
+    ret_list.append(cum_ret(pr))
     cagr_list.append(cagr(pr))
     sharpe_list_d.append(sharpe_daily(pr))
     sharpe_list_m.append(sharpe_monthly(pr))
@@ -296,7 +337,9 @@ feat_plot=feat_impt.dropna().reindex(feat_impt.mean().sort_values().index, axis=
 ax1.boxplot(x=feat_plot,vert=False,labels=feat_plot.columns,whis=(2,98),showmeans=True)
 fig1.show()
 
-#show portfolio prices for MPM
-plt.figure()
-(pr+1).cumprod().dropna().plot()
+#show portfolio price history for strategies
+(pr_df+1).cumprod().plot()
+
+'''Examining this asset universe, using Correlation matrix of ALL historical returns'''
+uni_corr_stats=uni_corr(returns.dropna())
 
