@@ -1,73 +1,71 @@
 import pandas as pd
 import datetime
-import yfinance as yf
 import numpy as np
-import warnings
 import random, math
 import riskfolio as rp
 import matplotlib.pyplot as plt
-import pickle as pkl
 import scipy.cluster.hierarchy as hr
 
 #%%
 '''
 FUNCTIONS FOR CREATING FEATURES
 '''
-def sharpe_daily(ret):
+def get_sharpe(ret, freq):
     '''
-    aim: estimate annual sharpe ratio using daily data
-    parameters:
-        ret: portfolio ret, datetime index, day by day prices (assumes NO NA values, fully filled)
-    '''
-    return (ret.mean()/ret.std()) * (252**0.5)
+    for e.g. if monthly selected:
+        find the first date of each month present, then for each COMPLETE month, calc the cum ret
+        note that for BOTH the first and last 'first month date', we just ignore those months
+        we ignore data before the first 'first month date' as they do not form a complete month
+        we ignore data after the last 'first month date' as they do not form a complete month
+        
+    Parameters
+    ----------
+    ret : portfolio ret, datetime index, day by day prices 
+        (assumes NO NA values, fully filled)
+    freq : string, either 'daily' , 'monthly' or 'yearly'
+        which frequency to use to estimate the sharpe ratio.
+        if daily, daily returns are used and are annualised
+        if monthly, monthly returns are used and are annualised
+        if yearly, yearly returns are used, already annualised
 
-def sharpe_monthly(ret):
+    Returns
+    -------
+    the sharpe ratio based on all these cum ret values
     '''
-    aim: estimate annual sharpe ratio using daily data and monthly returns
-    parameters:
-        ret: portfolio ret, datetime index, day by day prices (assumes NO NA values, fully filled)
+    #notify if NaN exists:
+    if ret.isnull().values.any() or 0 in ret.values:
+        print('There exists NaN or 0 values in get_sharpe!')
     
-    find the first date of each month present, then for each COMPLETE month, calc the cum ret
-    note that for BOTH the first and last 'first month date', we just ignore those months
-    we ignore data before the first 'first month date' as they do not form a complete month
-    we ignore data after the last 'first month date' as they do not form a complete month
+    #daily frequency selected
+    if freq=='daily':
+        return (ret.mean()/ret.std()) * (252**0.5)
     
-    returns: the sharpe ratio based on all these cum ret values'''
-    #datetime index
-    index = ret.groupby([ret.index.year, ret.index.month]).head(1).index[1:] #ignore first date
-    #convert to int index
-    index = [ret.index.get_loc(x) for x in index]
-    
-    sharpe=[]
-    for i in range(len(index)-1):#ignore last date
-        sharpe.append(cum_ret(ret.iloc[index[i]:index[i+1]]))
-    sharpe=pd.Series(sharpe)
-    return sharpe.mean()/sharpe.std() * (12**0.5)
-    
+    #monthly frequency selected
+    elif freq=='monthly':
+        #datetime index
+        index = ret.groupby([ret.index.year, ret.index.month]).head(1).index[1:] #ignore first date
+        #convert to int index
+        index = [ret.index.get_loc(x) for x in index]
 
-def sharpe_yearly(ret):
-    '''
-    aim: estimate annual sharpe ratio using daily data and yearly returns
-    parameters:
-        ret: portfolio ret, datetime index, day by day prices (assumes NO NA values, fully filled)
+        sharpe=[]
+        for i in range(len(index)-1):#ignore last date
+            sharpe.append(cum_ret(ret.iloc[index[i]:index[i+1]]))
+        sharpe=pd.Series(sharpe)
+        return sharpe.mean()/sharpe.std() * (12**0.5)
     
-    find the first date of each year present, then for each COMPLETE year, calc the cum ret
-    note that for BOTH the first and last 'first year date', we just ignore those dates
-    we ignore data before the first 'first year date' as they do not form a complete year
-    we ignore data after the last 'first year date' as they do not form a complete year
-    
-    returns: the sharpe ratio based on all these cum ret values'''
-    #datetime indexes
-    #ignore first date(may not be the start of a year), but need to keep last 'first year date' for indexing
-    index = ret.groupby([ret.index.year]).head(1).index[1:]
-    #convert to integer indexes in ret
-    index = [ret.index.get_loc(x) for x in index]
-    
-    sharpe=[]
-    for i in range(len(index)-1):#ignore last date
-        sharpe.append(cum_ret(ret.iloc[index[i]:index[i+1]]))
-    sharpe=pd.Series(sharpe)
-    return sharpe.mean()/sharpe.std()
+    #yearly frequency selected
+    elif freq=='yearly':
+        #datetime indexes
+        #ignore first date(may not be the start of a year), but need to keep last 'first year date' for indexing
+        index = ret.groupby([ret.index.year]).head(1).index[1:]
+        #convert to integer indexes in ret
+        index = [ret.index.get_loc(x) for x in index]
+        
+        sharpe=[]
+        for i in range(len(index)-1):#ignore last date
+            sharpe.append(cum_ret(ret.iloc[index[i]:index[i+1]]))
+        sharpe=pd.Series(sharpe)
+        return sharpe.mean()/sharpe.std()
 
 def cagr(ret):
     '''
@@ -76,6 +74,10 @@ def cagr(ret):
         ret: portfolio ret, datetime index, DAY BY DAY prices (assumes NO NA values, fully filled)
             can be of any length, simply finds cagr by estimating number of years elapsed, can be decimal years
     returns: the compound annual growth rate, as a fraction, not a percentage'''
+    #notify if NaN exists:
+    if ret.isnull().values.any() or 0 in ret.values:
+        print('There exists NaN or 0 values in cagr!')
+        
     end=(1 + ret).cumprod().iloc[-1]
     num_years=len(ret.index)/252
     return end**(1/num_years)-1
@@ -83,21 +85,40 @@ def cagr(ret):
 def rea_vol(ret):
     '''
     aim: find the realized volatility for the WHOLE entire period
-        is the square of the realized variance
+        is the root of the realized variance
     parameters:
         ret: portfolio return
-    
     '''
+    #notify if NaN exists:
+    if ret.isnull().values.any() or 0 in ret.values:
+        print('There exists NaN or 0 values in rea_vol!')
+    
     return np.sum(np.log(ret+1)**2)**0.5
 
 def mdd(ret):
     '''
-    aim: find max drawdown of period
-    parameters:
-        ret: can be indiv asset returns, in which case this will return a series'''
+    max drawdown is defined as the highest peak-to-trough value, divided by the peak (trough must be aft peak)
+    Parameters
+    ----------
+    ret : series or df
+        can be indiv asset returns, in which case this will return a series
+
+    Returns
+    -------
+    float
+        max drawdown of period
+    '''
+    #notify if NaN exists:
+    if ret.isnull().values.any() or 0 in ret.values:
+        print('There exists NaN or 0 values in mdd!')
+    #cum_returns is basically the price history
     cum_returns = (1 +ret).cumprod()
+    #cum_returns.cummax gives highest price observed so far at any point
+    #drawdown gives many 'windows' of (highest_price_so_far-current price)/highest price
+    #this constraints highest price to occur before current price
+    #maximizing this window is the same as finding the lowest trough after the peak
     drawdown =  1 - cum_returns.div(cum_returns.cummax())
-    return drawdown.max(axis=0) 
+    return drawdown.max(axis=0) #maximum vertically
 
 def semi_std(ret):
     '''
@@ -107,6 +128,10 @@ def semi_std(ret):
         ret: a df of returns, can accept NAN values
 
     '''
+    #notify if NaN exists:
+    if ret.isnull().values.any() or 0 in ret.values:
+        print('There exists NaN or 0 values in semi_std!')
+    
     average = np.nanmean(ret.to_numpy())
     r_below = ret[ret < average]
     return np.sqrt(1/len(r_below) * np.sum((average - r_below)**2))
@@ -128,6 +153,23 @@ def coph_corr(port):
 '''
 FUNCTIONS FOR MANIPULATING PORTFOLIO RETURNS AND WEIGHTS
 '''
+
+def inv_vol(ret):
+    '''
+    assets are weighted accordingly to the inverse volatility allocation
+    Parameters
+    ----------
+    ret : a dataframe
+        contain indiv asset returns
+
+    Returns
+    -------
+    list
+    the weights listed in order
+    '''
+    variance=ret.var(axis=0)
+    return (1/variance)/((1/variance).sum())
+
 
 def port_ret(weights, ret, index_):
     '''
@@ -160,6 +202,7 @@ def port_ret(weights, ret, index_):
         else: #if last number in index_, just apply weights all the way to last row
             ret.iloc[index_[i]:]=weights.loc[index_[i]].to_list()*ret.iloc[index_[i]:]
     #sum all the returns horizontally
+    #note that if rows are NaN, summing will make them zero!!
     ret=ret.sum(axis=1)
     #make all rows nan up to first rebalancing date
     ret.iloc[:index_[0]]=np.nan
@@ -211,6 +254,8 @@ def stats_asset_univ(uni_ret):
     s_m=uni_ret.std(axis=0).mean()
     m_s=uni_ret.mean(axis=0).std()
     s_s=uni_ret.std(axis=0).std()
+    #FIXME
+    #giving alot of nan
     mdd_m=mdd(uni_ret).mean()
     mdd_s=mdd(uni_ret).std()
     return(m_m,s_m,m_s,s_s,mdd_m,mdd_s)

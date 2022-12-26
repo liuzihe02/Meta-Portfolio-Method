@@ -52,13 +52,15 @@ with open('univs.pkl','rb') as f:  #rb is read binary code
      univs= pkl.load(f)
 
 # Date range
-start = '2004-12-01'
+start = '2003-11-01'
 end = '2022-11-01'
 
 # Tickers of assets, note that univs contains 10 universes!
-assets = ['SPY','XLY','SHY'] #change this number to switch universes
+assets = univs[0] #change this number to switch universes
+#THIS STEP IS SUPER IMPT!!
+#yfinance will download tickers in sorted order,regardless of given order
+#this step makes the columns names sorted also, if not the labelling will fk up
 assets.sort()
-
 # Downloading data
 prices = yf.download(assets, start=start, end=end)
 prices = prices.dropna()
@@ -78,9 +80,10 @@ returns = assets_prices.pct_change()#return on day 2 is day1-day2 comparison
 index = returns.groupby([returns.index.year, returns.index.month]).head(1).index
 
 #index_ is the integer version of index, in addition to:
-#only after the first year will weights be calculated (252days, which is the COV PERIOD)
-index_ = [returns.index.get_loc(x) for x in index if returns.index.get_loc(x) >252]
+#only after the first year will weights be calculated
+cov_period=252
+index_ = [returns.index.get_loc(x) for x in index if returns.index.get_loc(x) >cov_period]
 
 #save impt variables as a list, written in binary code
 with open('data.pkl','wb') as f:
-    pkl.dump([index_,returns],f)
+    pkl.dump([cov_period, index_, returns],f)
