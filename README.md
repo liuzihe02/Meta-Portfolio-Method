@@ -4,11 +4,12 @@ This project aims to implement the Meta Portfolio Method (MPM), outlined in the 
 ## Description
 
 ### Original Paper
-The original description of MPM is found in [Arxiv DOI link](https://doi.org/10.48550/arXiv.2111.05935). Features used for the ML model (XGBoost Regressor) include statistics about the entire asset universe, characteristics of the correlation matrix between all assets, and recent performance measures of both strategies. The label or target variable is difference between the future Sharpe Ratio of ERC and future Sharpe Ratio of HRP. This provides information on the relative performance of both models, choosing the strategy accordingly.
+The original description of MPM is found in this [Arxiv link](https://doi.org/10.48550/arXiv.2111.05935). Features used for the model (XGBoost Regressor) include statistics on the asset universe, characteristics of the correlation matrix, and recent performance measures on both strategies. The label (target variable) is the difference between the Sharpe Ratios of each strategy.
 
 ### Implementation Differences
-* While the paper combined Naive Risk Parity(NRP) and Hierarchical Risk Parity (HRP) in the MPM model, this work uses Equal Risk Contribution (ERC) and HRP. Both NRP and HRP had near-identical weights, and ERC with HRP gave significantly better results than NRP with HRP. Should you choose NRP instead, simply use the function "inv_vol" to obtain the desired weights for NRP.
-* The original paper rebalanced the portfolio monthly, and gathered data pairs (features-label) monthly
+* While the paper combined Naive Risk Parity(NRP) and Hierarchical Risk Parity (HRP) in the MPM, this work uses Equal Risk Contribution (ERC) and HRP. Both NRP and HRP had near-identical weights, and ERC with HRP gave significantly better results. Should you choose NRP instead, simply use the function "inv_vol" to obtain the weights.
+
+* The original paper rebalanced the portfolio monthly, and gathered data points (features-label) monthly. This work rebalances monthly, but gathers data daily to increase the dataset size. This increased the model's confidence in its features.
 
 ### Performance Results
 
@@ -16,14 +17,14 @@ The original description of MPM is found in [Arxiv DOI link](https://doi.org/10.
 ## Getting Started
 
 ### Dependencies
-
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
-
-### Installing
-
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+The following packages are used:
+* pandas
+* numpy
+* riskfolio
+* pickle
+* xgboost
+* skopt
+* yfinance
 
 ### Executing program
 
@@ -33,23 +34,17 @@ The original description of MPM is found in [Arxiv DOI link](https://doi.org/10.
 code blocks for commands
 ```
 
-## Help
+## Contributing
 
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
+If you have a suggestion that would make this better, please fork the repo and create a pull request. Any contributions are greatly appreciated! Don't forget to give the project a star, thanks!
 
-## Authors
+## Contact
 
-Contributors names and contact info
-
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+Liu Zihe - [@purplecrane02](https://twitter.com/purplecrane02)
 
 ## License
 
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
+This project is licensed under the [MIT] License - see the LICENSE file for details
 
 ## Acknowledgments
 
