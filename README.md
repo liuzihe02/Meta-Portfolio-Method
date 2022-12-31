@@ -1,4 +1,5 @@
 # Meta Portfolio Method
+
 This project implements the Meta Portfolio Method (MPM), outlined in the paper "A Meta-Method for Portfolio Management Using Machine Learning for Adaptive Strategy Selection". MPM uses machine learning to rebalance a portfolio, switching between 2 portfolio optimization strategies.
 
 ## Description
@@ -33,6 +34,7 @@ Sharpe Ratio (calculated with yearly returns)
 ## Getting Started
 
 ### Dependencies
+
 The following packages are used:
 * pandas
 * numpy
@@ -51,6 +53,7 @@ code blocks for commands
 ```
 
 ## Roadmap
+
 * Optimize Code
 * Testing for overfitting, on each monthly model
 * Trying different portfolio optimization strategies
