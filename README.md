@@ -49,12 +49,11 @@ Liu Zihe - [@purplecrane02](https://twitter.com/purplecrane02)
 
 ## License
 
-This project is licensed under the [MIT] License - see the LICENSE file for details
+This project is licensed under the MIT License - see the LICENSE file for details
 
 ## Acknowledgments
 
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
+Reference Papers
 * [Original Paper](https://arxiv.org/abs/2111.05935)
 * [Interpretable Machine Learning for Diversified Portfolio Construction](https://jfds.pm-research.com/content/early/2021/06/14/jfds.2021.1.066)
 * [Portfolio Optimization: A General Framework For Portfolio Choice](https://investresolve.com/portfolio-optimization-machine/)
