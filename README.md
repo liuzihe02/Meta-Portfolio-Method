@@ -34,6 +34,11 @@ The following packages are used:
 code blocks for commands
 ```
 
+## Roadmap
+* Optimize Code
+* Testing for overfitting, on each monthly model
+* Trying different portfolio optimization strategies
+
 ## Contributing
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. Any contributions are greatly appreciated! Don't forget to give the project a star, thanks!
