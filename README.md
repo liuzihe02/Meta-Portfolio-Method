@@ -15,17 +15,17 @@ The original description of MPM is found in this [Arxiv link](https://doi.org/10
 
 Sharpe Ratio (calculated with yearly returns)
 
-|  	| ERC 	| HRP 	| MPM 	|
-|:---:	|---	|---	|:---:	|
-| Universe 1 	| 0.87 	| 0.87 	| 0.97 	|
-| Universe 2 	| 0.90 	| 0.89 	| 0.94 	|
-| Universe 3 	| 0.81 	| 0.83 	| 1.10 	|
-| Universe 4 	| 1.12 	| 0.87 	| 1.10 	|
-| Universe 5 	| 1.13 	| 1.10 	| 1.15 	|
-| Universe 6 	| 1.03 	| 0.86 	| 1.45 	|
-| Universe 7 	| 1.04 	| 1.01 	| 1.10 	|
-| Universe 8 	| 0.93 	| 0.82 	| 1.07 	|
-| Universe 9 	| 1.21 	| 1.14 	| 1.54 	|
+|             	| ERC  	| HRP  	|  MPM 	|
+|:-----------:	|------	|------	|:----:	|
+|  Universe 1 	| 0.87 	| 0.87 	| 0.97 	|
+|  Universe 2 	| 0.90 	| 0.89 	| 0.94 	|
+|  Universe 3 	| 0.81 	| 0.83 	| 1.10 	|
+|  Universe 4 	| 1.12 	| 0.87 	| 1.10 	|
+|  Universe 5 	| 1.13 	| 1.10 	| 1.15 	|
+|  Universe 6 	| 1.03 	| 0.86 	| 1.45 	|
+|  Universe 7 	| 1.04 	| 1.01 	| 1.10 	|
+|  Universe 8 	| 0.93 	| 0.82 	| 1.07 	|
+|  Universe 9 	| 1.21 	| 1.14 	| 1.54 	|
 | Universe 10 	| 1.39 	| 1.23 	| 1.55 	|
 
 ## Getting Started
