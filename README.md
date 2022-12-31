@@ -35,6 +35,8 @@ The Sharpe Ratio is computed using yearly returns, assuming zero risk-free rate 
 
 ### Compound Annual Growth Rate
 
+CAGR is shown in percentages.
+
 |             	| ERC  	| HRP  	| MPM 	|
 |:-----------:	|------	|------	|:---:	|
 |  Universe 1 	| 3.6  	| 2.8  	| 3.8 	|
