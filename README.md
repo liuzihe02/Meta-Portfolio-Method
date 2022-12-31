@@ -82,7 +82,7 @@ The following packages are used:
 	- Important variables are:
 		- `comp` : a dataframe summarizing the results, containing Sharpe Ratios estimated with different frequencies
 		- `uni_corr_stats` : a dictionary containing information about the correlations between assets
-		- `weights_MPM` : a dictionary containing the weights for every rebalancing date. Each set of weights is a series.
+		- `weights_MPM` : a dictionary containing the weights for every rebalancing
 
 ## Roadmap
 
@@ -100,7 +100,7 @@ Liu Zihe - [@purplecrane02](https://twitter.com/purplecrane02)
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details
+This project is licensed under the MIT License - see `LICENSE` for details
 
 ## Acknowledgments
 
