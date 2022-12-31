@@ -16,7 +16,7 @@ The original description of MPM is found in this [Arxiv link](https://doi.org/10
 
 ### Performance Results
 
-Sharpe Ratio (calculated with yearly returns)
+#### Sharpe Ratio (calculated with yearly returns)
 
 |             	| ERC  	| HRP  	|  MPM 	|
 |:-----------:	|------	|------	|:----:	|
