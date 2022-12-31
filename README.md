@@ -14,9 +14,11 @@ The original description of MPM is found in this [Arxiv link](https://doi.org/10
 
 * The original paper rebalanced the portfolio monthly, and gathered data points (features-label) monthly. This work also rebalances monthly, but gathers data daily to increase the dataset size. This increases the model's confidence in its features.
 
-### Performance Results
+## Performance Results
 
-__Sharpe Ratio__ (calculated with yearly returns)
+### Sharpe Ratio
+
+The Sharpe Ratio is computed using yearly returns, assuming zero risk-free rate of return.
 
 |             	| ERC  	| HRP  	|  MPM 	|
 |:-----------:	|------	|------	|:----:	|
@@ -30,6 +32,8 @@ __Sharpe Ratio__ (calculated with yearly returns)
 |  Universe 8 	| 0.93 	| 0.82 	| 1.07 	|
 |  Universe 9 	| 1.21 	| 1.14 	| 1.54 	|
 | Universe 10 	| 1.39 	| 1.23 	| 1.55 	|
+
+### Compound Annual Growth Rate
 
 ## Getting Started
 
