@@ -35,6 +35,22 @@ The Sharpe Ratio is computed using yearly returns, assuming zero risk-free rate 
 
 ### Compound Annual Growth Rate
 
+|             	| ERC  	| HRP  	| MPM 	|
+|:-----------:	|------	|------	|:---:	|
+|  Universe 1 	| 3.6  	| 2.8  	| 3.8 	|
+|  Universe 2 	| 5.4  	| 4.8  	| 5.9 	|
+|  Universe 3 	| 0.77 	| 0.46 	| 1.7 	|
+|  Universe 4 	| 1.1  	| 0.48 	| 1.4 	|
+|  Universe 5 	| 4.0  	| 2.3  	| 4.1 	|
+|  Universe 6 	| 1.4  	| 0.49 	| 2.0 	|
+|  Universe 7 	| 4.3  	| 3.3  	| 4.4 	|
+|  Universe 8 	| 3.4  	| 1.8  	| 3.4 	|
+|  Universe 9 	| 4.7  	| 2.5  	| 3.8 	|
+| Universe 10 	| 3.8  	| 2.2  	| 4.7 	|
+
+### Feature Importance
+Below is an example boxplot showing the features importances. The boxes show the middle 50% of values, while the whiskers show the middle 96%.
+
 ## Getting Started
 
 ### Dependencies
