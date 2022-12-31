@@ -10,11 +10,13 @@ The original description of MPM is found in this [Arxiv link](https://doi.org/10
 
 ### Implementation Differences
 
-* While the paper combined Naive Risk Parity(NRP) and Hierarchical Risk Parity (HRP) in the MPM, this work uses Equal Risk Contribution (ERC) and HRP. Both NRP and HRP had near-identical weights, and ERC with HRP gave significantly better results. Should you choose NRP instead, simply use the function "inv_vol" to obtain the weights.
+* While the paper combined Naive Risk Parity(NRP) and Hierarchical Risk Parity (HRP) in the MPM, this work uses Equal Risk Contribution (ERC) and HRP. Both NRP and HRP had near-identical weights, and ERC with HRP gave significantly better results. Should you choose NRP instead, simply use `inv_vol` to obtain the weights.
 
 * The original paper rebalanced the portfolio monthly, and gathered data points (features-label) monthly. This work also rebalances monthly, but gathers data daily to increase the dataset size. This increases the model's confidence in its features.
 
 ## Performance Results
+
+For detailed testing results, do check out Report.docx
 
 ### Sharpe Ratio
 
@@ -50,9 +52,6 @@ CAGR is shown in percentages.
 |  Universe 9 	| 4.7  	| 2.5  	| 3.8 	|
 | Universe 10 	| 3.8  	| 2.2  	| 4.7 	|
 
-### Feature Importance
-Below is an example boxplot showing the features importances. The boxes show the middle 50% of values, while the whiskers show the middle 96%.
-
 ## Getting Started
 
 ### Dependencies
@@ -68,11 +67,22 @@ The following packages are used:
 
 ### Executing program
 
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
-```
+- Run `main_build_data`
+  - Input a list of tickers with `assets`
+  	> you can also generate multiple asset universes from a pool with `ticker_gen`
+  - Select the relevant timeframe with `start` and `end`
+
+- Run `main_strategies`
+  - Choose whether to do Bayesian Hyperparameter Optimization with the Boolean `bayes`
+  - Set the timeframe (in days, default 8 years) ML considers with `trng_period`
+  	> this is also the size of the ML training dataset
+
+- View Results and Weights
+	- `main_strategies` will generate a feature importance plot (boxes cover middle 50%, whiskers cover middle 96%) and the portfolio prices for the 3 strategies
+	- Important variables are:
+		- `comp` : a dataframe summarizing the results, containing Sharpe Ratios estimated with different frequencies
+		- `uni_corr_stats` : a dictionary containing information about the correlations between assets
+		- `weights_MPM` : a dictionary containing the weights for every rebalancing date. Each set of weights is a series.
 
 ## Roadmap
 
