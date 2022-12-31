@@ -1,10 +1,8 @@
 import pandas as pd
-import datetime
 import yfinance as yf
 import numpy as np
 import warnings
 import random
-import riskfolio as rp
 import matplotlib.pyplot as plt
 import pickle as pkl
 from main_utility_functions_V2 import ticker_gen
@@ -12,9 +10,13 @@ from main_utility_functions_V2 import ticker_gen
 warnings.filterwarnings("ignore")
 
 #%%
+
 # '''PART 0: CREATING LIST OF TICKER UNIVERSES
 # In the UCL paper, a list of 10 universes was created from a pool of 18 assets,
 # each universe sharing at most 2 assets. Under these constraints, such a list was created.
+
+# This section creates the list of universes and is stored as univs.pkl. If user wants to load
+# the univs.pkl file provided, this section can be removed.
 
 # Aggregate Bonds: AGG 
 # Emerging Markets: VWO, EEM
@@ -56,15 +58,15 @@ start = '2003-11-01'
 end = '2022-11-01'
 
 # Tickers of assets, note that univs contains 10 universes!
-assets = univs[0] #change this number to switch universes
+assets = univs[5] #change this number to switch universes
 #THIS STEP IS SUPER IMPT!!
 #yfinance will download tickers in sorted order,regardless of given order
-#this step makes the columns names sorted also, if not the labelling will fk up
+#this step makes the columns names sorted also, if not the labelling will wrong
 assets.sort()
 # Downloading data
 prices = yf.download(assets, start=start, end=end)
 prices = prices.dropna()
-
+#keep adjusted close prices only
 assets_prices=prices.loc[:, ('Adj Close', slice(None))]
 
 #%%
