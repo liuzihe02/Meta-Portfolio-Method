@@ -9,7 +9,7 @@ The original description of MPM is found in this [Arxiv link](https://doi.org/10
 ### Implementation Differences
 * While the paper combined Naive Risk Parity(NRP) and Hierarchical Risk Parity (HRP) in the MPM, this work uses Equal Risk Contribution (ERC) and HRP. Both NRP and HRP had near-identical weights, and ERC with HRP gave significantly better results. Should you choose NRP instead, simply use the function "inv_vol" to obtain the weights.
 
-* The original paper rebalanced the portfolio monthly, and gathered data points (features-label) monthly. This work rebalances monthly, but gathers data daily to increase the dataset size. This increased the model's confidence in its features.
+* The original paper rebalanced the portfolio monthly, and gathered data points (features-label) monthly. This work also rebalances monthly, but gathers data daily to increase the dataset size. This increases the model's confidence in its features.
 
 ### Performance Results
 
