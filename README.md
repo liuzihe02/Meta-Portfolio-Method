@@ -68,7 +68,7 @@ The following packages are used:
 ### Executing program
 
 - Run `main_build_data`
-  - Input a list of tickers with `assets`
+  - Input a list of tickers as `assets`
   	> you can also generate multiple asset universes from a pool with `ticker_gen`
   - Select the relevant timeframe with `start` and `end`
 
@@ -78,11 +78,12 @@ The following packages are used:
   	> this is also the size of the ML training dataset
 
 - View Results and Weights
-	- `main_strategies` will generate a feature importance plot (boxes cover middle 50%, whiskers cover middle 96%) and the portfolio prices for the 3 strategies
+	- `main_strategies` will generate a feature importance plot (boxes cover middle 50%, whiskers cover middle 96%) and plot the portfolio prices for the 3 strategies
 	- Important variables are:
 		- `comp` : a dataframe summarizing the results, containing Sharpe Ratios estimated with different frequencies
-		- `uni_corr_stats` : a dictionary containing information about the correlations between assets
-		- `weights_MPM` : a dictionary containing the weights for every rebalancing
+		- `uni_corr_stats` : a dictionary containing information about the correlations between all assets
+		- `weights_MPM` : a dictionary containing the weights for the MPM method
+		- `pr_df` : a dataframe containing the daily returns for each strategy
 
 ## Roadmap
 
@@ -92,7 +93,7 @@ The following packages are used:
 
 ## Contributing
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. Any contributions are greatly appreciated! Don't forget to give the project a star, thanks!
+If you have a suggestion that would make this better, please fork the repo and create a pull request. Any contributions are greatly appreciated! Don't forget to give the project a star, thank you!
 
 ## Contact
 
@@ -105,6 +106,6 @@ This project is licensed under the MIT License - see `LICENSE` for details
 ## Acknowledgments
 
 Reference Papers
-* [Original Paper](https://arxiv.org/abs/2111.05935)
+* [A Meta-Method for Portfolio Management Using Machine Learning for Adaptive Strategy Selection](https://arxiv.org/abs/2111.05935)
 * [Interpretable Machine Learning for Diversified Portfolio Construction](https://jfds.pm-research.com/content/early/2021/06/14/jfds.2021.1.066)
 * [Portfolio Optimization: A General Framework For Portfolio Choice](https://investresolve.com/portfolio-optimization-machine/)
